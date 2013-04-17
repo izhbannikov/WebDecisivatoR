@@ -13,7 +13,8 @@ shinyUI(
       br(),
       radioButtons("tree_type", "Tree type:",
                    list("Unrooted" = "unrooted",
-                        "Rooted" = "rooted"))
+                        "Rooted" = "rooted")),
+      checkboxInput("fix_dataset", "Make decisive", FALSE)
     ),
     
     mainPanel(

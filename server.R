@@ -21,27 +21,31 @@ shinyServer(function(input, output) {
     if (is.null(inFile))
       return("No input file provided")
     
-    
-    taxon_matrix <- values[["data"]]
-    
-    X <- levels(taxon_matrix[,1])
-    ans <- data.frame(taxon_matrix[,2:length(taxon_matrix)])
-    S <- lapply(seq_len(ncol(ans)), function(i) ans[,i])
-    S <- lapply( seq_len(length(S)), function(i) lapply( seq_len(length(S[[i]])), function(j) if ( S[[i]][j] == 1 ) { S[[i]][j] <- X[j] } else { S[[i]][j] <- "NA"  } ) )
-    S <- lapply( seq_len(length(S)), function(i) S[[i]] <- S[[i]][which(S[[i]] != "NA")]  )
-    S <- lapply( seq_len(length(S)), function(i) unlist(S[[i]]))
-    
     if(input$tree_type == "unrooted") {
-      res <- isdecisive(taxa=X,s=S)
+      if(input$fix_dataset == TRUE) {
+        res <- isdecisive(filename=inFile$datapath,fflag=T)
+      } else {
+        res <- isdecisive(filename=inFile$datapath)
+      }
+        
     }
     else 
     {
-      res <- isdecisive(taxa=X,s=S,unrooted=F)
+      if(input$fix_dataset == TRUE) {
+        res <- isdecisive(inFile$datapath,unrooted=F,fflag=T)
+      }else {
+        res <- isdecisive(inFile$datapath,unrooted=F)
+      }
     }
     
+    if(input$fix_dataset == TRUE) {
+      print(res[[2]])
+      print("Fixed dataset")
+      print(res[[1]])
+    } else {
+      print(res[[2]])
+    }
     
-    
-    print(res)
   })
     
 })
