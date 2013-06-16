@@ -22,7 +22,10 @@ shinyUI(
       verbatimTextOutput("summary"),
       
       h4("Data matrix"),
-      tableOutput("data_matrix")
+      tableOutput("data_matrix"),
+      
+      h4("Decisive matrix"),
+      HTML("<div name=\"decisive_matrix\" id=\"decisive_matrix\" class=\"shiny-html-output\"></div>")
       
       
     )
