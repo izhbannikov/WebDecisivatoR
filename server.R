@@ -11,7 +11,9 @@ shinyServer(function(input, output) {
     data <- read.csv(inFile$datapath, header=T)
     values[["data"]] <- data
     
-    taxon_matrix <- values[["data"]]
+    if(length(values[["data"]]) != 0) {
+      taxon_matrix <- values[["data"]]
+    } 
     
   })
   
@@ -20,6 +22,8 @@ shinyServer(function(input, output) {
     inFile <- input$file1
     if (is.null(inFile))
       return("No input file provided")
+    
+    values[["decisive_data"]] <- NULL
     
     if(input$tree_type == "unrooted") {
       if(input$fix_dataset == TRUE) {
@@ -48,33 +52,37 @@ shinyServer(function(input, output) {
   })
   
   output$decisive_matrix <- renderText({
-    df <- values[["data"]]
-    df2 <- values[["decisive_data"]]
-    
-    df_row <- ''
-    df_rows <- ''
-    
-    cn <- colnames(df)
-    for(i in seq(1,dim(df)[2])) {
-      df_row <- paste(df_row,cell_html(cn[i],flag=F),sep='')
-    }
-    df_rows <- paste(df_rows,row_html(df_row),sep='')
-    df_row <- ''
-    for(i in seq(1,dim(df2)[1])) {
-      df_row <- paste(df_row,cell_html(df[i,1],flag=F),sep='')
-      for(j in seq(1,dim(df2)[2])) {
-        if(df[i,j+1] != df2[i,j]) {
-          df_row <- paste(df_row,cell_html(df2[i,j],flag=T),sep='')
-        } else {
-          df_row <- paste(df_row,cell_html(df2[i,j]),sep='')
-        }
-        
+    if(length(values[["decisive_data"]]) != 0) {
+      df <- values[["data"]]
+      df2 <- values[["decisive_data"]]
+      
+      df_row <- ''
+      df_rows <- ''
+      
+      cn <- colnames(df)
+      for(i in seq(1,dim(df)[2])) {
+        df_row <- paste(df_row,cell_html(cn[i],flag=F),sep='')
       }
       df_rows <- paste(df_rows,row_html(df_row),sep='')
       df_row <- ''
-    }
+      for(i in seq(1,dim(df2)[1])) {
+        df_row <- paste(df_row,cell_html(df[i,1],flag=F),sep='')
+        for(j in seq(1,dim(df2)[2])) {
+          if(df[i,j+1] != df2[i,j]) {
+            df_row <- paste(df_row,cell_html(df2[i,j],flag=T),sep='')
+          } else {
+            df_row <- paste(df_row,cell_html(df2[i,j]),sep='')
+          }
+          
+        }
+        df_rows <- paste(df_rows,row_html(df_row),sep='')
+        df_row <- ''
+      }
+      
+      full_table <- paste0('<table border=1>', df_rows, '</table>')
+    } 
     
-    full_table <- paste0('<table border=1>', df_rows, '</table>')
+    
   })
   
   radio_html <- function(radio_name, radio_value, radio_text) {
