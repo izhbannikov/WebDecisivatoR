@@ -10,6 +10,7 @@ shinyUI(
     ),
     sidebarPanel(
       fileInput(inputId = "file1", label="Upload your own data set:",accept=c('text/csv', 'text/comma-separated-values,text/plain')),
+      checkboxInput("format", "Nexus format", FALSE),
       br(),
       radioButtons("tree_type", "Tree type:",
                    list("Unrooted" = "unrooted",

@@ -8,7 +8,11 @@ shinyServer(function(input, output) {
     if (is.null(inFile))
       return(NULL)
     
-    data <- read.csv(inFile$datapath, header=T)
+    if(input$format) {
+      data <- read_nexus(inFile$datapath)
+    }else {
+      data <- read.csv(inFile$datapath, header=T)
+    }
     values[["data"]] <- data
     
     if(length(values[["data"]]) != 0) {
@@ -27,18 +31,34 @@ shinyServer(function(input, output) {
     
     if(input$tree_type == "unrooted") {
       if(input$fix_dataset == TRUE) {
-        res <- isdecisive(filename=inFile$datapath,fflag=T)
+        if(input$format) {
+          res <- isdecisive(filename=inFile$datapath,fflag=T,format="nexus")
+        } else {
+          res <- isdecisive(filename=inFile$datapath,fflag=T)
+        }
       } else {
-        res <- isdecisive(filename=inFile$datapath)
+        if(input$format) {
+          res <- isdecisive(filename=inFile$datapath,format="nexus")
+        } else {
+          res <- isdecisive(filename=inFile$datapath)
+        }
       }
         
     }
     else 
     {
       if(input$fix_dataset == TRUE) {
-        res <- isdecisive(inFile$datapath,unrooted=F,fflag=T)
+        if(input$format) {
+          res <- isdecisive(inFile$datapath,unrooted=F,fflag=T,format="nexus")
+        } else {
+          res <- isdecisive(inFile$datapath,unrooted=F,fflag=T)
+        }
       }else {
-        res <- isdecisive(inFile$datapath,unrooted=F)
+        if(input$format) {
+          res <- isdecisive(inFile$datapath,unrooted=F,format="nexus")
+        } else {
+          res <- isdecisive(inFile$datapath,unrooted=F)
+        }
       }
     }
     
@@ -61,7 +81,7 @@ shinyServer(function(input, output) {
       
       cn <- colnames(df)
       for(i in seq(1,dim(df)[2])) {
-        df_row <- paste(df_row,cell_html(cn[i],flag=F),sep='')
+        df_row <- paste(df_row,paste('<td width=27 height=25 align=\"center\"><strong>',cn[i], '</strong></td>',sep=''),sep='')
       }
       df_rows <- paste(df_rows,row_html(df_row),sep='')
       df_row <- ''
@@ -85,11 +105,6 @@ shinyServer(function(input, output) {
     
   })
   
-  radio_html <- function(radio_name, radio_value, radio_text) {
-    paste0('<input type="radio" name="', 
-           radio_name, '" value="', radio_value, '">', radio_text)
-  }
-  
   cell_html <- function(table_cell,flag=F) {
     if (flag) {
       paste0('<td BGCOLOR="#ffff00" width=27 height=20 align=\"center\">',table_cell, '</td>')
@@ -101,5 +116,43 @@ shinyServer(function(input, output) {
   row_html <- function(table_row) {
     paste0('<tr>', table_row, '</tr>')
   }
+  
+  read_nexus <- function(filename) {
+    library(ape)
+    
+    ans<-read.nexus.data(filename)
+    
+    t<-read.delim(filename,sep='\n')
+    genes <- matrix(nrow=1, ncol=3)
+    for(i in seq(1,dim(t)[1])) {
+      if(length(grep('CHARSET', t$X.NEXUS[i])) > 0)  {
+        if( (length(grep('coding', t$X.NEXUS[i])) > 0) || (length(grep('noncoding', t$X.NEXUS[i])) > 0) )  next
+        
+        trw <- strsplit(toString(t$X.NEXUS[i]),' ')
+        pos <- strsplit(trw[[1]][4],'-')
+        genes<-rbind( genes, c( trw[[1]][2],pos[[1]][1],substring(pos[[1]][2],1,nchar(pos[[1]][2])-1) ) )
+        
+      }
+    }
+    
+    genes <- data.frame(genes[(2:dim(genes)[1]),])
+    
+    data_matrix <- matrix(0,nrow=length(ans),ncol=dim(genes)[1])
+    colnames(data_matrix) <- genes[,1]
+    rownames(data_matrix) <- names(ans)
+    
+    for(i in seq(1,length(ans))) {
+      for(j in seq(1,dim(genes)[1])) {
+        str <- paste(ans[i][as.numeric(as.character(genes$X2[j])):as.numeric(as.character(genes$X3[j]))],collapse='')
+        aaa<-gregexpr('-',str)
+        if( (length(aaa[[1]])/(as.numeric(as.character(genes$X3[j])) - as.numeric(as.character(genes$X2[j])))) <= 0.1) {
+          data_matrix[i,j] <- 1
+        }
+      }
+    }
+    
+    out <- data_matrix
+  }
+  
     
 })
