@@ -8,9 +8,10 @@ shinyServer(function(input, output) {
     if (is.null(inFile))
       return(NULL)
     
-    if(input$format) {
+    if(input$format == "nex") {
       data <- read_nexus(inFile$datapath)
-    }else {
+    }
+    if(input$format == "csv") {
       data <- read.csv(inFile$datapath, header=T)
     }
     values[["data"]] <- data
@@ -31,15 +32,17 @@ shinyServer(function(input, output) {
     
     if(input$tree_type == "unrooted") {
       if(input$fix_dataset == TRUE) {
-        if(input$format) {
+        if(input$format == "nex") {
           res <- isdecisive(filename=inFile$datapath,fflag=T,format="nexus")
-        } else {
+        } 
+        if(input$format == "csv") {
           res <- isdecisive(filename=inFile$datapath,fflag=T)
         }
       } else {
-        if(input$format) {
+        if(input$format == "nex") {
           res <- isdecisive(filename=inFile$datapath,format="nexus")
-        } else {
+        } 
+        if(input$format == "csv") {
           res <- isdecisive(filename=inFile$datapath)
         }
       }
@@ -48,15 +51,17 @@ shinyServer(function(input, output) {
     else 
     {
       if(input$fix_dataset == TRUE) {
-        if(input$format) {
+        if(input$format == "nex") {
           res <- isdecisive(inFile$datapath,unrooted=F,fflag=T,format="nexus")
-        } else {
+        } 
+        if(input$format == "csv") {
           res <- isdecisive(inFile$datapath,unrooted=F,fflag=T)
         }
       }else {
-        if(input$format) {
+        if(input$format == "nex") {
           res <- isdecisive(inFile$datapath,unrooted=F,format="nexus")
-        } else {
+        } 
+        if(input$format == "csv") {
           res <- isdecisive(inFile$datapath,unrooted=F)
         }
       }
@@ -65,6 +70,7 @@ shinyServer(function(input, output) {
     if(input$fix_dataset == TRUE) {
       print(res[[2]])
       values[["decisive_data"]] <- res[[1]]
+      values[["suggested_list"]] <- res[[3]]
     } else {
       print(res[[2]])
     }
@@ -154,5 +160,19 @@ shinyServer(function(input, output) {
     out <- data_matrix
   }
   
+  output$downloadList <- downloadHandler(
+    filename = function() {
+      paste('suggested_list-', Sys.Date(), '.csv', sep='')
+    },
+    content = function(file) {
+      write.csv(values[["suggested_list"]],file,sep=',')
+    }
+  )
+  
+  output$suggested_list <- renderTable({
+    if(input$fix_dataset == TRUE) {
+      print(values[["suggested_list"]])
+    } 
+  })
     
 })
