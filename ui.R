@@ -11,8 +11,8 @@ shinyUI(
     sidebarPanel(
       fileInput(inputId = "file1", label="Upload your own data set:",accept=c('text/csv', 'text/comma-separated-values,text/plain')),
       selectInput("format", "Input file format:",
-                  list("Nexus" = "nex", 
-                        "CSV" = "csv")),
+                  list("CSV" = "csv", "Nexus" = "nex")
+                  ),
       br(),
       radioButtons("tree_type", "Tree type:",
                    list("Unrooted" = "unrooted",
@@ -22,7 +22,10 @@ shinyUI(
       conditionalPanel(
         condition = "input.fix_dataset == true",
         downloadButton('downloadList', 'Download suggested list')
-      )
+      ),
+      br(),
+      helpText(a("Test data",href="https://www.dropbox.com/sh/17srv29a2pfzcqg/907vSpcO6k",target="_blank")),
+      helpText(a("GitHub", href="https://github.com/izhbannikov/decisivatoR",target="_blank"))    
     ),
     
     mainPanel(
