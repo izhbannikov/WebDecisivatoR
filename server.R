@@ -80,6 +80,8 @@ shinyServer(function(input, output) {
   output$decisive_matrix <- renderText({
     if(length(values[["decisive_data"]]) != 0) {
       df <- values[["data"]]
+      colnames(df)[1] <-"T"
+      
       df2 <- values[["decisive_data"]]
       
       df_row <- ''
